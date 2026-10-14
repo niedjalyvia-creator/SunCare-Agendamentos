@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Usuario {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  senha String
+}
+
+model Cliente {
+  id              Int           @id @default(autoincrement())
+  nome_cliente    String
+  data_nascimento DateTime
+  telefone        String
+  agendamentos    Agendamento[]
+}
+
+model Servico {
+  id              Int           @id @default(autoincrement())
+  nome_servico    String
+  preco           Float
+  duracao_minutos Int
+  agendamentos    Agendamento[]
+}
+
+model Agendamento {
+  id         Int      @id @default(autoincrement())
+  clienteId  Int
+  servicoId  Int
+  status     String   
+  data_hora  DateTime
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  servico    Servico  @relation(fields: [servicoId], references: [id])
+}

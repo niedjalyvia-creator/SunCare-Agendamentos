@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>Agendamentos</title>
+    <link rel='stylesheet' href='main.css'>
+</head>
+<body>
+    <h1>Cadastro de Agendamentos</h1>
+    <form id="form-cadastroAgendamento" action="/cadastro_agendamento" method="POST">
+        <label>Cliente:</label>
+        <select id="cliente_id" name="cliente_id" required>
+            <option value="">Selecione um cliente</option>
+        </select>
+        <label>Serviço:</label>
+        <select id="servico_id" name="servico_id" required>
+            <option value="">Selecione um serviço</option>
+        </select>
+        <label>Status:</label>
+        <select id="status" name="status" required>
+            <option value="">Selecione um status</option>
+            <option value="agendado">Agendado</option>
+            <option value="concluido">Concluído</option>
+            <option value="cancelado">Cancelado</option>
+        </select>
+        <label>Data e Hora:</label>
+        <input id="data_hora" name="data_hora" type="datetime-local" required>
+        <button type="submit">Cadastrar</button>
+        <button type="button" onclick="window.location.href='index.html'">Voltar ao inicio</button> 
+    </form>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Serviço</th>
+            <th>Status</th>
+            <th>Data/Hora</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+
+    <tbody id="tabela-agendamentos">
+        <button onclick="buscarAgendamentos()">Atualizar Agendamentos</button>
+        <button onclick= 
+    </tbody>
+</table>
+
+    <script>
+        async function buscarClientes() {
+        const resposta = await fetch('/listar_clientes');
+        const clientes = await resposta.json();
+
+        const selecionarCliente = document.getElementById('cliente_id');
+        clientes.forEach (cliente =>{
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = cliente.nome;
+            selecionarCliente.appendChild(option);
+        })
+        console.log(clientes);
+    }
+
+        buscarClientes();
+
+        async function buscarServicos(){
+            const resposta = await fetch('/listar_servicos');
+            const servicos = await resposta.json();
+
+            const selecionarServico = document.getElementById('servico_id');
+            servicos.forEach(servico => {
+                const option = document.createElement('option');
+                option.value = servico.id;
+                option.textContent = servico.nome_servico;
+                selecionarServico.appendChild(option);
+            });
+            console.log(servicos);
+        }
+
+        buscarServicos();
+
+        async function buscarAgendamentos() {
+            const resposta = await fetch('/listar_agendamentos');
+            const agendamentos = await resposta.json();
+
+            const tabelaAgendamentos = document.getElementById('tabela-agendamentos');
+            agendamentos.forEach(agendamento => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${agendamento.cliente}</td>
+                    <td>${agendamento.servico}</td>
+                    <td>${agendamento.status}</td>
+                    <td>${new Date(agendamento.data_hora).toLocaleString()}</td>
+                `;
+                tabelaAgendamentos.appendChild(tr);
+            });
+        }
+        buscarAgendamentos();
+    </script>
+</body>
+</html></html>
