@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='pt-BR'>
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Pagina de Gerenciamento</title>
+    <title>Painel Principal - Sistema de Agendamentos</title>
     <link rel='stylesheet' href='main.css'>
 </head>
 <body>
-    <button onclick="window.location.href='clientes.html'">Gerenciar Clientes</button>
-    <button onclick="window.location.href='servicos.html'">Gerenciar Serviços</button>
-    <button onclick="window.location.href='agendamentos.html'">Gerenciar Agendamentos</button>
+    <div style="text-align: center; margin-top: 50px;">
+        <h1>Bem-vindo ao Sistema de Agendamentos</h1>
+        <p>Escolha o que deseja gerenciar abaixo:</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; max-width: 300px; margin: 30px auto;">
+            <button onclick="window.location.href='clientes.html'">Gerenciar Clientes</button>
+            <button onclick="window.location.href='servicos.html'">Gerenciar Serviços</button>
+            <button onclick="window.location.href='agendamentos.html'">Gerenciar Agendamentos</button>
+            <button onclick="window.location.href='login.html'">Voltar ao Login</button>
+        </div>
+    </div>
 </body>
-</html></html>
+</html>

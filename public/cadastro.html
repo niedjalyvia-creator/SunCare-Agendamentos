@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='pt-BR'>
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -7,15 +7,20 @@
     <link rel='stylesheet' href='main.css'>
 </head>
 <body>
-    <h1>Cadastro</h1>
-    <h2>Sistema de agendamentos Bronze</h2>
-    <form id="form-cadastro" action="/cadastro_cliente" method="POST">
-        <label>Email:</label>
-        <input id="email_cadastro" name="email_cadastro"type="email" placeholder="Digite seu email" required>
-        <label>Senha:</label>
-        <input id="senha_cadastro" name="senha_cadastro" type="password" placeholder="Digite sua senha" required>
-        <button type="submit">Cadastrar</button>
-        <button type="button" onclick="window.location.href='index.html'">Voltar ao inicio</button>
-    </form>
+    <div style="text-align: center; margin-top: 50px;">
+        <h1>Cadastro</h1>
+        <h2>Sistema de agendamentos Bronze</h2>
+        
+        <form id="form-cadastro" action="/cadastro" method="POST">
+            <label>Email:</label>
+            <input id="email_cadastro" name="email" type="email" placeholder="Digite seu email" required>
+            
+            <label>Senha:</label>
+            <input id="senha_cadastro" name="senha" type="password" placeholder="Digite sua senha" required>
+            
+            <button type="submit">Cadastrar</button><br><br>
+            <button type="button" onclick="window.location.href='login.html'">Voltar ao login</button>
+        </form>
+    </div>
 </body>
-</html></html>
+</html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='pt-BR'>
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -7,16 +7,124 @@
     <link rel='stylesheet' href='main.css'>
 </head>
 <body>
-    <h1>Cadastro de Serviços</h1>
-    <form id="form-cadastro_servico" action="/cadastro_servico" method="POST">
-        <label>Nome do Serviço:</label>
-        <input id="nome_servico" name="nome_servico" type="text" placeholder="Digite o nome do serviço" required>
+    <div style="text-align: center; margin-top: 50px;">
+
+        <h1>Cadastro de Serviços</h1>
+        <form id="form-cadastro_servico" action="/cadastro_servico" method="POST">
+            <label>Nome do Serviço:</label>
+            <input id="nome_servico" name="nome_servico" type="text" placeholder="Digite o nome do serviço" required>
+        
         <label>Preço:</label>
         <input id="preco" name="preco" type="number" step="0.01" placeholder="Digite o preço do serviço" required>
+        
         <label>Duração (minutos):</label>
         <input id="duracao" name="duracao_minutos" type="number" placeholder="Digite a duração do serviço em minutos" required>
+        
         <button type="submit">Cadastrar</button>
         <button type="button" onclick="window.location.href='index.html'">Voltar ao inicio</button>
     </form>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Preço</th>
+                <th>Duração (min)</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-servicos">
+        </tbody>
+    </table>
+</div>
+
+    <dialog id="modal-editar"">
+        <h2>Editar Serviço</h2>
+        <form id="form-editarServico">
+            <input type="hidden" id="edit-id">
+
+            <label>Nome do Serviço:</label><br>
+            <input id="edit-nome_servico" type="text" required><br><br>
+
+            <label>Preço:</label><br>
+            <input id="edit-preco" type="number" step="0.01" required><br><br>
+
+            <label>Duração (minutos):</label><br>
+            <input id="edit-duracao" type="number" required><br><br>
+
+            <button type="submit">Salvar Alterações</button>
+            <button type="button" onclick="fecharModal()">Cancelar</button>
+        </form>
+    </dialog>
+
+    <script>
+        async function buscarServicos() {
+            const resposta = await fetch('/listar_servicos');
+            const servicos = await resposta.json();
+            
+            document.getElementById('tabela-servicos').innerHTML = servicos.map(serv => `
+                <tr>
+                    <td>${serv.nome_servico}</td>
+                    <td>R$ ${Number(serv.preco).toFixed(2)}</td>
+                    <td>${serv.duracao_minutos} min</td>
+                    <td>
+                        <button onclick="deletarServico(${serv.id})">Excluir</button>
+                        <button onclick="abrirModalEditar(${serv.id}, '${serv.nome_servico}', ${serv.preco}, ${serv.duracao_minutos})">Editar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deletarServico(id) {
+            if (confirm('Tem certeza que deseja excluir este serviço?')) {
+                const resposta = await fetch(`/deletar_servico/${id}`, { method: 'DELETE' });
+                if (resposta.ok) {
+                    buscarServicos();
+                } else {
+                    alert('Erro ao deletar o serviço.');
+                }
+            }
+        }
+
+        const modal = document.getElementById('modal-editar');
+
+        function abrirModalEditar(id, nome, preco, duracao) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-nome_servico').value = nome;
+            document.getElementById('edit-preco').value = preco;
+            document.getElementById('edit-duracao').value = duracao;
+            modal.showModal();
+        }
+
+        function fecharModal() {
+            modal.close();
+        }
+
+        document.getElementById('form-editarServico').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const dados = {
+                nome_servico: document.getElementById('edit-nome_servico').value,
+                preco: document.getElementById('edit-preco').value,
+                duracao_minutos: document.getElementById('edit-duracao').value
+            };
+
+            const resposta = await fetch(`/atualizar_servico/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            if (resposta.ok) {
+                modal.close();
+                buscarServicos();
+            } else {
+                alert('Erro ao atualizar o serviço.');
+            }
+        });
+
+        buscarServicos();
+    </script>
 </body>
-</html></html>
+</html>

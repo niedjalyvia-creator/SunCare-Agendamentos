@@ -7,16 +7,20 @@
     <link rel='stylesheet' href='main.css'>
 </head>
 <body>
-    <h1>Cadastro de Agendamentos</h1>
-    <form id="form-cadastroAgendamento" action="/cadastro_agendamento" method="POST">
-        <label>Cliente:</label>
-        <select id="cliente_id" name="cliente_id" required>
-            <option value="">Selecione um cliente</option>
-        </select>
-        <label>Serviço:</label>
-        <select id="servico_id" name="servico_id" required>
-            <option value="">Selecione um serviço</option>
-        </select>
+    <div style="text-align: center; margin-top: 50px;">
+        <h1>Cadastro de Agendamentos</h1>
+        <form id="form-cadastroAgendamento" action="/cadastro_agendamento" method="POST">
+
+            <label>Cliente:</label>
+            <select id="cliente_id" name="cliente_id" required>
+                <option value="">Selecione um cliente</option>
+            </select>
+
+            <label>Serviço:</label>
+            <select id="servico_id" name="servico_id" required>
+                <option value="">Selecione um serviço</option>
+            </select>
+
         <label>Status:</label>
         <select id="status" name="status" required>
             <option value="">Selecione um status</option>
@@ -24,79 +28,181 @@
             <option value="concluido">Concluído</option>
             <option value="cancelado">Cancelado</option>
         </select>
+
         <label>Data e Hora:</label>
         <input id="data_hora" name="data_hora" type="datetime-local" required>
+        
         <button type="submit">Cadastrar</button>
         <button type="button" onclick="window.location.href='index.html'">Voltar ao inicio</button> 
     </form>
 
-<table border="1">
-    <thead>
-        <tr>
-            <th>Cliente</th>
-            <th>Serviço</th>
-            <th>Status</th>
-            <th>Data/Hora</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Serviço</th>
+                <th>Status</th>
+                <th>Data/Hora</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-agendamentos">
+        </tbody>
+    </table>
+    
+</div>
+    <dialog id="modal-editar" ">
+        <h2>Editar Agendamento</h2>
+        <form id="form-editar">
+            <input type="hidden" id="edit-id">
+            
+            <label>Cliente:</label><br>
+            <select id="edit-cliente_id" required>
+                <option value="">Selecione um cliente</option>
+            </select><br><br>
 
-    <tbody id="tabela-agendamentos">
-        <button onclick="buscarAgendamentos()">Atualizar Agendamentos</button>
-        <button onclick= 
-    </tbody>
-</table>
+            <label>Serviço:</label><br>
+            <select id="edit-servico_id" required>
+                <option value="">Selecione um serviço</option>
+            </select><br><br>
+
+            <label>Status:</label><br>
+            <select id="edit-status" required>
+                <option value="agendado">Agendado</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+            </select><br><br>
+
+            <label>Data e Hora:</label><br>
+            <input id="edit-data_hora" type="datetime-local" required><br><br>
+
+            <button type="submit">Salvar Alterações</button>
+            <button type="button" onclick="fecharModal()">Cancelar</button>
+        </form>
+    </dialog>
 
     <script>
         async function buscarClientes() {
-        const resposta = await fetch('/listar_clientes');
-        const clientes = await resposta.json();
-
-        const selecionarCliente = document.getElementById('cliente_id');
-        clientes.forEach (cliente =>{
-            const option = document.createElement('option');
-            option.value = cliente.id;
-            option.textContent = cliente.nome;
-            selecionarCliente.appendChild(option);
-        })
-        console.log(clientes);
-    }
-
-        buscarClientes();
+            const resposta = await fetch('/listar_clientes');
+            const clientes = await resposta.json();
+            const selecionarCliente = document.getElementById('cliente_id');
+            clientes.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente.id;
+                option.textContent = cliente.nome_cliente;
+                selecionarCliente.appendChild(option);
+            });
+        }
 
         async function buscarServicos(){
             const resposta = await fetch('/listar_servicos');
-            const servicos = await resposta.json();
-
-            const selecionarServico = document.getElementById('servico_id');
+            const servicos = await resposta.json(); 
+            const selecionarServicos = document.getElementById('servico_id');
             servicos.forEach(servico => {
                 const option = document.createElement('option');
                 option.value = servico.id;
                 option.textContent = servico.nome_servico;
-                selecionarServico.appendChild(option);
+                selecionarServicos.appendChild(option);
             });
-            console.log(servicos);
         }
-
-        buscarServicos();
 
         async function buscarAgendamentos() {
             const resposta = await fetch('/listar_agendamentos');
             const agendamentos = await resposta.json();
+            document.getElementById('tabela-agendamentos').innerHTML = agendamentos.map(agend => `
+                <tr>
+                    <td>${agend.cliente?.nome_cliente || 'N/A'}</td>
+                    <td>${agend.servico?.nome_servico || 'N/A'}</td>
+                    <td>${agend.status}</td>
+                    <td>${new Date(agend.data_hora).toLocaleString()}</td>
+                    <td>
+                        <button onclick="concluirAgendamento(${agend.id})">Concluir</button>
+                        <button onclick="deletarAgendamento(${agend.id})">Excluir</button>
+                        <button onclick="abrirModalEditar(${agend.id}, '${agend.cliente_id}', '${agend.servico_id}', '${agend.status}', '${agend.data_hora}')">Editar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-            const tabelaAgendamentos = document.getElementById('tabela-agendamentos');
-            agendamentos.forEach(agendamento => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${agendamento.cliente}</td>
-                    <td>${agendamento.servico}</td>
-                    <td>${agendamento.status}</td>
-                    <td>${new Date(agendamento.data_hora).toLocaleString()}</td>
-                `;
-                tabelaAgendamentos.appendChild(tr);
+        async function deletarAgendamento(id) {
+            if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+                const resposta = await fetch(`/deletar_agendamento/${id}`, { method: 'DELETE' });
+                if (resposta.ok) {
+                    buscarAgendamentos();
+                } else {
+                    alert('Erro ao deletar o agendamento.');
+                }
+            }
+        }
+
+        async function concluirAgendamento(id) {
+            const resposta = await fetch(`/concluir_agendamento/${id}`, { method: 'PUT' });
+            if (resposta.ok) {
+                buscarAgendamentos();
+            } else {
+                alert('Erro ao concluir o agendamento.');
+            }
+        }
+
+        const modal = document.getElementById('modal-editar');
+
+        async function carregarSelects(url, seletor) {
+            const resposta = await fetch(url);
+            const dados = await resposta.json();
+            const select = document.getElementById(seletor);
+            select.innerHTML = '<option value="">Selecione...</option>';
+            dados.forEach(item => {
+                const id = item.id;
+                const nome = item.nome_cliente || item.nome_servico;
+                select.innerHTML += `<option value="${id}">${nome}</option>`;
             });
         }
+
+        async function abrirModalEditar(id, clienteId, servicoId, status, dataHora) {
+            await carregarSelects('/listar_clientes', 'edit-cliente_id');
+            await carregarSelects('/listar_servicos', 'edit-servico_id');
+
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-cliente_id').value = clienteId;
+            document.getElementById('edit-servico_id').value = servicoId;
+            document.getElementById('edit-status').value = status;
+            document.getElementById('edit-data_hora').value = dataHora.slice(0, 16);
+
+            modal.showModal();
+        }
+
+        function fecharModal() {
+            modal.close();
+        }
+
+        document.getElementById('form-editar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const dados = {
+                cliente_id: document.getElementById('edit-cliente_id').value,
+                servico_id: document.getElementById('edit-servico_id').value,
+                status: document.getElementById('edit-status').value,
+                data_hora: document.getElementById('edit-data_hora').value
+            };
+
+            const resposta = await fetch(`/atualizar_agendamento/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            if (resposta.ok) {
+                modal.close();
+                buscarAgendamentos();
+            } else {
+                alert('Erro ao atualizar.');
+            }
+        });
+
+        buscarClientes();
+        buscarServicos();
         buscarAgendamentos();
     </script>
 </body>
-</html></html>
+</html>

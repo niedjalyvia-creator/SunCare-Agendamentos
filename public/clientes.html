@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang='pt-BR'>
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -7,16 +7,123 @@
     <link rel='stylesheet' href='main.css'>
 </head>
 <body>
+    <div style="text-align: center; margin-top: 50px;">
     <h1>Cadastro de Clientes</h1>
     <form id="form-cadastroCliente" action="/cadastro_cliente" method="POST">
         <label>Nome:</label>
         <input id="nome_cliente" name="nome_cliente" type="text" placeholder="Digite seu nome" required>
+        
         <label>Data de Nascimento:</label>
         <input id="data_nascimento" name="data_nascimento" type="date" required>
+        
         <label>Telefone:</label>
         <input id="telefone" name="telefone" type="tel" placeholder="Digite seu telefone" required>
+        
         <button type="submit">Cadastrar</button>
         <button type="button" onclick="window.location.href='index.html'">Voltar ao inicio</button>
     </form>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Data de Nascimento</th>
+                <th>Telefone</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-clientes">
+        </tbody>
+    </table>
+    </div>
+
+    <dialog id="modal-editar">
+        <h2>Editar Cliente</h2>
+        <form id="form-editarCliente">
+            <input type="hidden" id="edit-id">
+
+            <label>Nome:</label><br>
+            <input id="edit-nome_cliente" type="text" required><br><br>
+
+            <label>Data de Nascimento:</label><br>
+            <input id="edit-data_nascimento" type="date" required><br><br>
+
+            <label>Telefone:</label><br>
+            <input id="edit-telefone" type="text" required><br><br>
+
+            <button type="submit">Salvar Alterações</button>
+            <button type="button" onclick="fecharModal()">Cancelar</button>
+        </form>
+    </dialog>
+
+    <script>
+        async function buscarClientes() {
+            const resposta = await fetch('/listar_clientes');
+            const clientes = await resposta.json();
+            
+            document.getElementById('tabela-clientes').innerHTML = clientes.map(cli => `
+                <tr>
+                    <td>${cli.nome_cliente}</td>
+                    <td>${cli.data_nascimento ? cli.data_nascimento.split('T')[0] : ''}</td>
+                    <td>${cli.telefone}</td>
+                    <td>
+                        <button onclick="deletarCliente(${cli.id})">Excluir</button>
+                        <button onclick="abrirModalEditar(${cli.id}, '${cli.nome_cliente}', '${cli.data_nascimento}', '${cli.telefone}')">Editar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deletarCliente(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                const resposta = await fetch(`/deletar_cliente/${id}`, { method: 'DELETE' });
+                if (resposta.ok) {
+                    buscarClientes();
+                } else {
+                    alert('Erro ao deletar cliente (verifique se há agendamentos vinculados).');
+                }
+            }
+        }
+
+        const modal = document.getElementById('modal-editar');
+
+        function abrirModalEditar(id, nome, dataNasc, telefone) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-nome_cliente').value = nome;
+            document.getElementById('edit-data_nascimento').value = dataNasc ? dataNasc.split('T')[0] : '';
+            document.getElementById('edit-telefone').value = telefone;
+            modal.showModal();
+        }
+
+        function fecharModal() {
+            modal.close();
+        }
+
+        document.getElementById('form-editarCliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const dados = {
+                nome_cliente: document.getElementById('edit-nome_cliente').value,
+                data_nascimento: document.getElementById('edit-data_nascimento').value,
+                telefone: document.getElementById('edit-telefone').value
+            };
+
+            const resposta = await fetch(`/atualizar_cliente/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            if (resposta.ok) {
+                modal.close();
+                buscarClientes();
+            } else {
+                alert('Erro ao atualizar o cliente.');
+            }
+        });
+
+        buscarClientes();
+    </script>
 </body>
-</html></html>
+</html>
